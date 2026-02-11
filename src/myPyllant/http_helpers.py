@@ -96,9 +96,6 @@ async def _request_json(
                 )
 
             # Check for other client errors (4xx)
-            # Note: raise_for_status callback in session will be called automatically
-            # by aiohttp when the response is created, so we just need to handle
-            # the exception if it occurs
             if 400 <= resp.status < 500:
                 text = await resp.text()
                 logger.error(
@@ -112,8 +109,7 @@ async def _request_json(
 
             # Parse JSON
             try:
-                result = await resp.json()
-                return result
+                return await resp.json()
             except (aiohttp.ContentTypeError, ValueError) as e:
                 text = await resp.text()
                 logger.error(

@@ -1280,7 +1280,6 @@ class MyPyllantAPI:
             f"{get_system_id(system)}/diagnostic-trouble-codes"
         )
         try:
-            # Use centralized helper with retries and proper error handling
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1289,8 +1288,7 @@ class MyPyllantAPI:
             )
             return dict_to_snake_case(result)
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return None on any error
-            # Log with details for debugging
+            # Return None on error for backward compatibility
             logger.warning(
                 "Could not get diagnostic trouble codes: %s",
                 str(e),
@@ -1308,7 +1306,7 @@ class MyPyllantAPI:
         url = f"{await self.get_api_base()}/rts/{get_system_id(system)}/devices"
         try:
             logger.debug("Getting RTS data")
-            # Use centralized helper with retries and proper error handling
+            
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1317,7 +1315,7 @@ class MyPyllantAPI:
             )
             return dict_to_snake_case(result)
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return default on any error
+            # Return default on error for backward compatibility
             logger.warning(
                 "Could not get RTS data: %s",
                 str(e),
@@ -1335,7 +1333,7 @@ class MyPyllantAPI:
         url = f"{await self.get_api_base()}/hem/{get_system_id(system)}/mpc"
         try:
             logger.debug("Getting MPC data")
-            # Use centralized helper with retries and proper error handling
+            
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1344,7 +1342,7 @@ class MyPyllantAPI:
             )
             return dict_to_snake_case(result)
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return default on any error
+            # Return default on error for backward compatibility
             logger.warning(
                 "Could not get MPC data: %s",
                 str(e),
@@ -1361,7 +1359,7 @@ class MyPyllantAPI:
         """
         url = f"{await self.get_api_base()}/eebus/energy-management/{get_system_id(system)}"
         try:
-            # Use centralized helper with retries and proper error handling
+            
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1370,7 +1368,7 @@ class MyPyllantAPI:
             )
             return dict_to_snake_case(result)
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return default on any error
+            # Return default on error for backward compatibility
             logger.warning(
                 "Could not get energy management data: %s",
                 str(e),
@@ -1387,7 +1385,7 @@ class MyPyllantAPI:
         """
         url = f"{await self.get_api_base()}/ship/{get_system_id(system)}/self"
         try:
-            # Use centralized helper with retries and proper error handling
+            
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1396,7 +1394,7 @@ class MyPyllantAPI:
             )
             return dict_to_snake_case(result)
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return default on any error
+            # Return default on error for backward compatibility
             logger.warning(
                 "Could not get eebus information: %s",
                 str(e),
@@ -1433,7 +1431,7 @@ class MyPyllantAPI:
         """
         url = f"{get_api_base()}/api/v1/ambisense/facilities/{get_system_id(system)}/capability"
         try:
-            # Use centralized helper with retries and proper error handling
+            
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1442,7 +1440,7 @@ class MyPyllantAPI:
             )
             return dict_to_snake_case(result).get("rbr_capable", False)
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return default on any error
+            # Return default on error for backward compatibility
             logger.warning(
                 "Could not get ambisense capability data: %s",
                 str(e),
@@ -1459,7 +1457,7 @@ class MyPyllantAPI:
         """
         url = f"{get_api_base()}/api/v1/ambisense/facilities/{get_system_id(system)}/rooms"
         try:
-            # Use centralized helper with retries and proper error handling
+            
             result = await _request_json(
                 self.aiohttp_session,
                 "GET",
@@ -1471,7 +1469,7 @@ class MyPyllantAPI:
                 room["time_program"] = room.pop("timeprogram")
             return result
         except (TransientError, PermanentError) as e:
-            # Preserve backward compatibility: return default on any error
+            # Return default on error for backward compatibility
             logger.warning(
                 "Could not get rooms data: %s",
                 str(e),
