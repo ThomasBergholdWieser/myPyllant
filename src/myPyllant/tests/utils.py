@@ -44,6 +44,11 @@ def _mypyllant_aioresponses():
                     re.compile(r".*"),
                     exception=self.test_exception,
                 )
+                self.put(
+                    re.compile(r".*"),
+                    exception=self.test_exception,
+                )
+                return self
 
             # auth endpoints
             self.get(
