@@ -95,10 +95,11 @@ async def _request_json(
                     f"Server error: {resp.status} {text}"
                 )
 
-            # Call raise_for_status for other 4xx errors
-            try:
-                await resp.raise_for_status()
-            except aiohttp.ClientResponseError as e:
+            # Check for other client errors (4xx)
+            # Note: raise_for_status callback in session will be called automatically
+            # by aiohttp when the response is created, so we just need to handle
+            # the exception if it occurs
+            if 400 <= resp.status < 500:
                 text = await resp.text()
                 logger.error(
                     "Client error for %s %s: %s (status %d)",
@@ -107,9 +108,7 @@ async def _request_json(
                     text,
                     resp.status,
                 )
-                # Attach response body to error message
-                e.message = f"{e.message}, response was: {text}"
-                raise PermanentError(f"Client error: {e.status} {text}") from e
+                raise PermanentError(f"Client error: {resp.status} {text}")
 
             # Parse JSON
             try:
