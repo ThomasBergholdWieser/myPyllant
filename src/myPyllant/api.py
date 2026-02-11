@@ -13,6 +13,11 @@ from zoneinfo import ZoneInfo
 
 from aiohttp import ClientResponseError
 
+from myPyllant.http_helpers import (
+    TransientError,
+    PermanentError,
+    _request_json,
+)
 from myPyllant.const import (
     API_URL_BASE,
     AUTHENTICATE_URL,
@@ -1275,15 +1280,23 @@ class MyPyllantAPI:
             f"{get_system_id(system)}/diagnostic-trouble-codes"
         )
         try:
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get diagnostic trouble codes", exc_info=e)
+            return dict_to_snake_case(result)
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return None on any error
+            # Log with details for debugging
+            logger.warning(
+                "Could not get diagnostic trouble codes: %s",
+                str(e),
+                exc_info=True,
+            )
             return None
-        result = await response.json()
-        return dict_to_snake_case(result)
 
     async def get_rts(self, system: System | str) -> dict:
         """
@@ -1295,15 +1308,22 @@ class MyPyllantAPI:
         url = f"{await self.get_api_base()}/rts/{get_system_id(system)}/devices"
         try:
             logger.debug("Getting RTS data")
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get RTS data", exc_info=e)
+            return dict_to_snake_case(result)
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return default on any error
+            logger.warning(
+                "Could not get RTS data: %s",
+                str(e),
+                exc_info=True,
+            )
             return {"statistics": []}
-        result = await response.json()
-        return dict_to_snake_case(result)
 
     async def get_mpc(self, system: System | str) -> dict:
         """
@@ -1315,15 +1335,22 @@ class MyPyllantAPI:
         url = f"{await self.get_api_base()}/hem/{get_system_id(system)}/mpc"
         try:
             logger.debug("Getting MPC data")
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get MPC data", exc_info=e)
+            return dict_to_snake_case(result)
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return default on any error
+            logger.warning(
+                "Could not get MPC data: %s",
+                str(e),
+                exc_info=True,
+            )
             return {"devices": []}
-        result = await response.json()
-        return dict_to_snake_case(result)
 
     async def get_energy_management(self, system: System | str) -> dict:
         """
@@ -1334,15 +1361,22 @@ class MyPyllantAPI:
         """
         url = f"{await self.get_api_base()}/eebus/energy-management/{get_system_id(system)}"
         try:
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get energy management data", exc_info=e)
+            return dict_to_snake_case(result)
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return default on any error
+            logger.warning(
+                "Could not get energy management data: %s",
+                str(e),
+                exc_info=True,
+            )
             return {}
-        result = await response.json()
-        return dict_to_snake_case(result)
 
     async def get_eebus(self, system: System | str) -> dict:
         """
@@ -1353,15 +1387,22 @@ class MyPyllantAPI:
         """
         url = f"{await self.get_api_base()}/ship/{get_system_id(system)}/self"
         try:
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get eebus information", exc_info=e)
+            return dict_to_snake_case(result)
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return default on any error
+            logger.warning(
+                "Could not get eebus information: %s",
+                str(e),
+                exc_info=True,
+            )
             return {}
-        result = await response.json()
-        return dict_to_snake_case(result)
 
     async def toggle_eebus(
         self, system: System | str, enabled: bool = True
@@ -1392,15 +1433,22 @@ class MyPyllantAPI:
         """
         url = f"{get_api_base()}/api/v1/ambisense/facilities/{get_system_id(system)}/capability"
         try:
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get ambisense capability data", exc_info=e)
+            return dict_to_snake_case(result).get("rbr_capable", False)
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return default on any error
+            logger.warning(
+                "Could not get ambisense capability data: %s",
+                str(e),
+                exc_info=True,
+            )
             return False
-        result = await response.json()
-        return dict_to_snake_case(result).get("rbr_capable", False)
 
     async def get_ambisense_rooms(self, system: System | str) -> list[dict]:
         """
@@ -1411,17 +1459,25 @@ class MyPyllantAPI:
         """
         url = f"{get_api_base()}/api/v1/ambisense/facilities/{get_system_id(system)}/rooms"
         try:
-            response = await self.aiohttp_session.get(
+            # Use centralized helper with retries and proper error handling
+            result = await _request_json(
+                self.aiohttp_session,
+                "GET",
                 url,
                 headers=self.get_authorized_headers(),
             )
-        except ClientResponseError as e:
-            logger.warning("Could not get rooms data", exc_info=e)
+            result = dict_to_snake_case(result)
+            for room in result:
+                room["time_program"] = room.pop("timeprogram")
+            return result
+        except (TransientError, PermanentError) as e:
+            # Preserve backward compatibility: return default on any error
+            logger.warning(
+                "Could not get rooms data: %s",
+                str(e),
+                exc_info=True,
+            )
             return []
-        result = dict_to_snake_case(await response.json())
-        for room in result:
-            room["time_program"] = room.pop("timeprogram")
-        return result
 
     async def set_ambisense_room_operation_mode(
         self,
